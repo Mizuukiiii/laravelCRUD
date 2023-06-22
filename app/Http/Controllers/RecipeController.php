@@ -76,36 +76,47 @@ class RecipeController extends Controller
 
     public function edit($id)
     {
-        $categories = Category::get();
         $recipe = Recipe::findOrFail($id);
-        if(session('user_id')==$recipe->user_id) {
-            return view('recipes.edit', ['categories' => $categories], compact('recipe'));
-        }
-        else {
+
+        if (session('user_id') == $recipe->user_id) {
+            $categories = Category::all();
+            return view('recipes.edit', compact('recipe', 'categories'));
+        } else {
             abort(403);
         }
-
     }
+
+
+
 
     public function update(Request $request, $id)
     {
-
-
         $validatedData = $request->validate([
             'category_id' => 'required',
             'title' => 'required|max:255',
             'description' => 'required',
             'cooking_time' => 'required',
-            'instruction' => 'required|max:10',
+            'instruction' => 'required',
             'ingredients' => 'required',
         ]);
 
         DB::table('recipes')
             ->where('id', $id)
-            ->update($validatedData);
+            ->update([
+                'category_id' => $validatedData['category_id'],
+                'title' => $validatedData['title'],
+                'description' => $validatedData['description'],
+                'cooking_time' => $validatedData['cooking_time'],
+                'instruction' => $validatedData['instruction'],
+                'ingredients' => $validatedData['ingredients'],
+            ]);
 
         return redirect()->route('recipes.index')->with('success', 'Recipe updated successfully.');
     }
+
+
+
+
 
 
     public function destroy($id)
